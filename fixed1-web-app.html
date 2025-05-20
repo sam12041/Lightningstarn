@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lightning and Daily Star</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #1a1a2e;
+            color: #e6e6e6;
+        }
+        
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            background: linear-gradient(135deg, #4a00e0, #8e2de2);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .star-count {
+            font-size: 42px;
+            font-weight: bold;
+            margin: 15px 0;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        .star-icon {
+            color: #ffd700;
+            font-size: 24px;
+        }
+        
+        .nav-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .nav-btn {
+            background: linear-gradient(to bottom, #3a3a5c, #2d2d44);
+            border: none;
+            border-radius: 10px;
+            padding: 20px 15px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .nav-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .section {
+            background-color: #252547;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .tap-button {
+            background: linear-gradient(135deg, #00bcd4, #2196f3);
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(33, 150, 243, 0.3);
+            user-select: none;
+        }
+        
+        .tap-button:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 30px rgba(33, 150, 243, 0.4);
+        }
+        
+        .tap-button:active {
+            transform: scale(0.95);
+        }
+        
+        .tap-count {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #363663;
+            background-color: #1e1e42;
+            color: white;
+            font-size: 16px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #4a00e0, #8e2de2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: background 0.3s, transform 0.2s;
+        }
+        
+        button:hover {
+            background: linear-gradient(135deg, #5a10f0, #9e3df2);
+            transform: translateY(-2px);
+        }
+        
+        .task-item {
+            background-color: #2e2e56;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .task-reward {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        
+        .referral-link {
+            background-color: #1e1e42;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 15px 0;
+            word-break: break-all;
+            border: 1px dashed #4a00e0;
+        }
+        
+        .copy-btn {
+            background: linear-gradient(135deg, #00796b, #009688);
+            margin-top: 5px;
+            padding: 8px;
+        }
+        
+        .history-item {
+            background-color: #2e2e56;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .history-status {
+            font-size: 14px;
+            margin-top: 5px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        
+        .pending {
+            background-color: #ff9800;
+            color: #000;
+        }
+        
+        .completed {
+            background-color: #4caf50;
+            color: #fff;
+        }
+        
+        .back-btn {
+            background: linear-gradient(to bottom, #3a3a5c, #2d2d44);
+            width: auto;
+            padding: 10px 20px;
+            margin-bottom: 15px;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            cursor: help;
+        }
+        
+        .tooltip-text {
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            white-space: nowrap;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1;
+            width: 200px;
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Animation for earning stars */
+        @keyframes starEarned {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.5);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .star-earned {
+            animation: starEarned 0.5s ease-in-out;
+        }
+
+        /* Admin section styles */
+        .admin-section {
+            display: none;
+            background-color: #1e1e42;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .admin-section.active {
+            display: block;
+        }
+
+        .admin-controls {
+            margin-top: 20px;
+        }
+
+        .admin-btn {
+            background: linear-gradient(to bottom, #7a3030, #5d2424);
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Lightning & Daily Star</h1>
+            <div class="star-count"><span id="star-value">0.00</span> <span class="star-icon">★</span></div>
+            <div>Today's Taps: <span id="daily-taps">0</span>/20</div>
+        </header>
+        
+        <div class="nav-buttons">
+            <button class="nav-btn" onclick="showSection('tapping')">
+                <span class="star-icon">★</span>
+                Tapping
+                <small>0.05 stars per tap</small>
+            </button>
+            <button class="nav-btn" onclick="showSection('invite')">
+                <span class="star-icon">★</span>
+                Invite
+                <small>1 star per referral</small>
+            </button>
+            <button class="nav-btn" onclick="showSection('tasks')">
+                <span class="star-icon">★</span>
+                Tasks
+                <small>0.1 star per task</small>
+            </button>
+            <button class="nav-btn" onclick="showSection('withdraw')">
+                <span class="star-icon">★</span>
+                Withdraw
+                <small>Min 15 stars</small>
+            </button>
+            <button class="nav-btn" id="admin-btn" onclick="showAdminLogin()" style="background: linear-gradient(to bottom, #7a3030, #5d2424);">
+                <span style="font-size: 20px;">👑</span>
+                Admin
+                <small>Access panel</small>
+            </button>
+        </div>
+        
+        <!-- Tapping Section -->
+        <div id="tapping" class="section">
+            <button class="back-btn" onclick="hideAllSections()">← Back</button>
+            <h2>Daily Tapping</h2>
+            <p>Tap to earn 0.05 stars per tap (maximum 20 taps per day)</p>
+            
+            <div class="tap-button" id="tapButton">
+                TAP
+            </div>
+            
+            <div class="tap-count">
+                You've tapped <span id="tap-count">0</span>/20 times today
+            </div>
+        </div>
+        
+        <!-- Invite Section -->
+        <div id="invite" class="section">
+            <button class="back-btn" onclick="hideAllSections()">← Back</button>
+            <h2>Invite Friends</h2>
+            <p>Earn 1 star for each friend that joins using your referral link</p>
+            
+            <div class="form-group">
+                <label>Your Referral Link:</label>
+                <div class="referral-link" id="refLink">https://lightningdailystar_bot/ref?user=username123</div>
+                <button class="copy-btn" onclick="copyRefLink()">Copy Link</button>
+            </div>
+            
+            <div class="form-group">
+                <h3>Your Referrals</h3>
+                <div id="referral-list">
+                    <div class="task-item">
+                        <div>friend1234</div>
+                        <div class="task-reward">+1.00 ★</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tasks Section -->
+        <div id="tasks" class="section">
+            <button class="back-btn" onclick="hideAllSections()">← Back</button>
+            <h2>Daily Tasks</h2>
+            <p>Complete tasks to earn stars</p>
+            
+            <div id="task-list">
+                <div class="task-item">
+                    <div>Watch a video ad</div>
+                    <div class="task-reward">+0.10 ★</div>
+                </div>
+                <div class="task-item">
+                    <div>Complete a survey</div>
+                    <div class="task-reward">+0.10 ★</div>
+                </div>
+                <div class="task-item">
+                    <div>Follow our social media</div>
+                    <div class="task-reward">+0.10 ★</div>
+                </div>
+                <div class="task-item">
+                    <div>Rate our app</div>
+                    <div class="task-reward">+0.10 ★</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Withdraw Section -->
+        <div id="withdraw" class="section">
+            <button class="back-btn" onclick="hideAllSections()">← Back</button>
+            <h2>Withdraw Stars</h2>
+            <p>Minimum withdrawal: 15 stars</p>
+            
+            <div class="form-group">
+                <label>Username (used as wallet):</label>
+                <input type="text" id="username" placeholder="Enter your username">
+            </div>
+            
+            <div class="form-group">
+                <label>Stars to Withdraw:</label>
+                <input type="number" id="withdraw-amount" min="15" step="0.01" value="15">
+                <div class="tooltip">?
+                    <span class="tooltip-text">Minimum withdrawal is 15 stars</span>
+                </div>
+            </div>
+            
+            <button id="withdraw-btn" onclick="requestWithdrawal()">Request Withdrawal</button>
+            
+            <h3 style="margin-top: 20px;">Withdrawal History</h3>
+            <div id="withdrawal-history">
+                <!-- Withdrawal history will be displayed here -->
+            </div>
+        </div>
+
+        <!-- Admin Login Section -->
+        <div id="admin-login" class="section">
+            <button class="back-btn" onclick="hideAllSections()">← Back</button>
+            <h2>Admin Login</h2>
+            <div class="form-group">
+                <label>Admin Password:</label>
+                <input type="password" id="admin-password" placeholder="Enter admin password">
+            </div>
+            <button onclick="checkAdminPassword()">Login</button>
+        </div>
+
+        <!-- Admin Panel Section -->
+        <div id="admin-panel" class="section">
+            <button class="back-btn" onclick="hideAllSections()">← Back</button>
+            <h2>Admin Panel</h2>
+            
+            <div class="admin-controls">
+                <h3>Withdrawal Requests</h3>
+                <div id="admin-withdrawals">
+                    <!-- Withdrawal requests will appear here -->
+                </div>
+                
+                <h3>User Management</h3>
+                <div class="form-group">
+                    <label>User ID:</label>
+                    <input type="text" id="admin-user-id" placeholder="Enter user ID">
+                </div>
+                <div class="form-group">
+                    <label>Stars to Add/Remove:</label>
+                    <input type="number" id="admin-star-amount" step="0.01" placeholder="Amount">
+                </div>
+                <button class="admin-btn" onclick="adminAddStars()">Add Stars</button>
+                <button class="admin-btn" onclick="adminRemoveStars()">Remove Stars</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Telegram WebApp safely
+        const tg = window.Telegram?.WebApp;
+        
+        // Initialize app data
+        let userData = {
+            stars: 10.00, // Starting with 10 stars for testing
+            dailyTaps: 0,
+            referrals: [],
+            tasks: [],
+            withdrawals: []
+        };
+
+        // Admin configuration
+        const adminConfig = {
+            password: "admin123", // Change this to your secure password
+            botToken: "YOUR_BOT_TOKEN", // Replace with your bot token
+            channelId: "@YOUR_CHANNEL_USERNAME" // Replace with your channel username
+        };
+        
+        // Load any saved data
+        function loadUserData() {
+            const savedData = localStorage.getItem('lightningStarData');
+            if (savedData) {
+                try {
+                    userData = JSON.parse(savedData);
+                } catch (e) {
+                    console.error("Error parsing saved data:", e);
+                }
+            }
+            updateUI();
+            
+            // Check if we need to reset daily taps (new day)
+            const lastTapDate = localStorage.getItem('lastTapDate');
+            const today = new Date().toDateString();
+            if (lastTapDate !== today) {
+                userData.dailyTaps = 0;
+                localStorage.setItem('lastTapDate', today);
+                saveUserData();
+            }
+
+            // If running in Telegram WebApp, pre-fill username with Telegram username
+            if (tg?.initDataUnsafe?.user?.username) {
+                document.getElementById('username').value = tg.initDataUnsafe.user.username;
+            }
+        }
+        
+        // Save user data
+        function saveUserData() {
+            try {
+                localStorage.setItem('lightningStarData', JSON.stringify(userData));
+            } catch (e) {
+                console.error("Error saving data:", e);
+            }
+            updateUI();
+        }
+        
+        // Update UI elements with current data
+        function updateUI() {
+            // Safely update star value display
+            const starValueElement = document.getElementById('star-value');
+            if (starValueElement) {
+                starValueElement.textContent = userData.stars.toFixed(2);
+            }
+            
+            // Safely update tap counters
+            const dailyTapsElement = document.getElementById('daily-taps');
+            const tapCountElement = document.getElementById('tap-count');
+            if (dailyTapsElement && tapCountElement) {
+                dailyTapsElement.textContent = userData.dailyTaps;
+                tapCountElement.textContent = userData.dailyTaps;
+            }
+            
+            // Update withdrawal history
+            const historyContainer = document.getElementById('withdrawal-history');
+            if (historyContainer) {
+                historyContainer.innerHTML = '';
+                
+                if (userData.withdrawals.length === 0) {
+                    historyContainer.innerHTML = '<p>No withdrawal history yet.</p>';
+                } else {
+                    userData.withdrawals.forEach(w => {
+                        const historyItem = document.createElement('div');
+                        historyItem.className = 'history-item';
+                        historyItem.innerHTML = `
+                            <div>Amount: ${w.amount.toFixed(2)} stars</div>
+                            <div>Username: ${w.username}</div>
+                            <div>Date: ${w.date}</div>
+                            <div class="history-status ${w.status.toLowerCase()}">${w.status}</div>
+                        `;
+                        historyContainer.appendChild(historyItem);
+                    });
+                }
+            }
+
+            // Update admin withdrawals if in admin panel
+            if (document.getElementById('admin-panel')?.classList.contains('active')) {
+                updateAdminWithdrawals();
+            }
+        }
+
+        // Update admin withdrawals list
+        function updateAdminWithdrawals() {
+            const container = document.getElementById('admin-withdrawals');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            if (userData.withdrawals.length === 0) {
+                container.innerHTML = '<p>No pending withdrawals.</p>';
+                return;
+            }
+
+            userData.withdrawals.forEach((w, index) => {
+                if (w.status === 'Pending') {
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    item.innerHTML = `
+                        <div><strong>Request #${index + 1}</strong></div>
+                        <div>User: ${w.username}</div>
+                        <div>Amount: ${w.amount.toFixed(2)} stars</div>
+                        <div>Date: ${w.date}</div>
+                        <div class="admin-withdrawal-actions">
+                            <button onclick="approveWithdrawal(${index})" style="background: #4CAF50;">Approve</button>
+                            <button onclick="rejectWithdrawal(${index})" style="background: #f44336;">Reject</button>
+                        </div>
+                    `;
+                    container.appendChild(item);
+                }
+            });
+
+            if (container.innerHTML === '') {
+                container.innerHTML = '<p>No pending withdrawals.</p>';
+            }
+        }
+        
+        // Navigation functions
+        function showSection(sectionId) {
+            // Hide all sections first
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show the requested section
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.classList.add('active');
+                
+                // Special handling for admin panel
+                if (sectionId === 'admin-panel') {
+                    updateAdminWithdrawals();
+                }
+            }
+        }
+        
+        function hideAllSections() {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+        }
+        
+        // Tap functionality
+        function setupTapButton() {
+            const tapButton = document.getElementById('tapButton');
+            if (!tapButton) return;
+
+            tapButton.addEventListener('click', function() {
+                if (userData.dailyTaps < 20) {
+                    userData.dailyTaps++;
+                    userData.stars += 0.05;
+                    
+                    // Update UI immediately
+                    updateUI();
+                    
+                    // Animate star count
+                    const starValueElement = document.getElementById('star-value');
+                    if (starValueElement) {
+                        starValueElement.classList.add('star-earned');
+                        setTimeout(() => {
+                            starValueElement.classList.remove('star-earned');
+                        }, 500);
+                    }
+                    
+                    saveUserData();
+                } else {
+                    alert("You've reached your daily tap limit (20 taps)");
+                }
+            });
+        }
+        
+        // Copy referral link
+        function setupCopyButton() {
+            const copyButton = document.querySelector('.copy-btn');
+            if (!copyButton) return;
+
+            copyButton.addEventListener('click', function() {
+                const refLink = document.getElementById('refLink');
+                if (!refLink) return;
+
+                navigator.clipboard.writeText(refLink.textContent)
+                    .then(() => {
+                        const originalText = copyButton.textContent;
+                        copyButton.textContent = 'Copied!';
+                        setTimeout(() => {
+                            copyButton.textContent = originalText;
+                        }, 2000);
+                    })
+                    .catch(err => {
+                        console.error('Failed to copy text: ', err);
+                    });
+            });
+        }
+        
+        // Request withdrawal
+        function setupWithdrawalButton() {
+            const withdrawButton = document.getElementById('withdraw-btn');
+            if (!withdrawButton) return;
+
+            withdrawButton.addEventListener('click', function() {
+                const username = document.getElementById('username')?.value.trim();
+                const amountInput = document.getElementById('withdraw-amount');
+                const amount = amountInput ? parseFloat(amountInput.value) : 0;
+                
+                if (!username) {
+                    alert('Please enter your username');
+                    return;
+                }
+                
+                if (isNaN(amount)) {
+                    alert('Please enter a valid amount');
+                    return;
+                }
+                
+                if (amount < 15) {
+                    alert('Minimum withdrawal amount is 15 stars');
+                    return;
+                }
+                
+                if (amount > userData.stars) {
+                    alert('You don\'t have enough stars');
+                    return;
+                }
+                
+                // Process withdrawal
+                userData.stars -= amount;
+                
+                const withdrawal = {
+                    amount: amount,
+                    username: username,
+                    date: new Date().toLocaleString(),
+                    status: 'Pending'
+                };
+                
+                userData.withdrawals.unshift(withdrawal);
+                saveUserData();
+                
+                // Send notification to channel
+                sendWithdrawalNotification(withdrawal);
+                
+                alert('Withdrawal request submitted! It will be processed by the admin.');
+            });
+        }
+
+        // Send withdrawal notification to Telegram channel
+        async function sendWithdrawalNotification(withdrawalData) {
+            try {
+                const messageText = `🚨 New Withdrawal Request 🚨
+📛 User: ${withdrawalData.username}
+💰 Amount: ${withdrawalData.amount.toFixed(2)} stars
+📅 Date: ${withdrawalData.date}
+🆔 User ID: ${tg?.initDataUnsafe?.user?.id || 'N/A'}
+🔗 Profile: ${tg?.initDataUnsafe?.user?.id ? `<a href="tg://user?id=${tg.initDataUnsafe.user.id}">User Profile</a>` : 'N/A'}`;
+                
+                console.log('Withdrawal notification:', messageText);
+                
+                // For demo purposes, we'll simulate sending to a channel
+                if (adminConfig.botToken && adminConfig.channelId && 
+                    adminConfig.botToken !== "8116294433:AAFGFoK1-H5AyHGCH4_9sN3cniN4Em3z6RE" && 
+                    adminConfig.channelId !== "@botscompet") {
+                    const response = await fetch(`https://api.telegram.org/bot${adminConfig.botToken}/sendMessage`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            chat_id: adminConfig.channelId,
+                            text: messageText,
+                            parse_mode: 'HTML'
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    console.log('Notification sent:', result);
+                }
+            } catch (error) {
+                console.error('Error sending notification:', error);
+            }
+        }
+
+        // Admin functions
+        function setupAdminLogin() {
+            const adminLoginBtn = document.getElementById('admin-btn');
+            if (adminLoginBtn) {
+                adminLoginBtn.addEventListener('click', function() {
+                    showSection('admin-login');
+                });
+            }
+
+            const loginButton = document.querySelector('#admin-login button');
+            if (loginButton) {
+                loginButton.addEventListener('click', checkAdminPassword);
+            }
+        }
+
+        function checkAdminPassword() {
+            const passwordInput = document.getElementById('admin-password');
+            if (!passwordInput) return;
+
+            const password = passwordInput.value;
+            if (password === adminConfig.password) {
+                showSection('admin-panel');
+                passwordInput.value = ''; // Clear password field
+            } else {
+                alert('Incorrect admin password');
+            }
+        }
+
+        function approveWithdrawal(index) {
+            if (index >= 0 && index < userData.withdrawals.length) {
+                userData.withdrawals[index].status = 'Completed';
+                saveUserData();
+                updateAdminWithdrawals();
+                alert('Withdrawal approved!');
+            }
+        }
+
+        function rejectWithdrawal(index) {
+            if (index >= 0 && index < userData.withdrawals.length) {
+                // Return stars to user
+                const withdrawal = userData.withdrawals[index];
+                userData.stars += withdrawal.amount;
+                withdrawal.status = 'Rejected';
+                saveUserData();
+                updateAdminWithdrawals();
+                alert('Withdrawal rejected and stars returned to user!');
+            }
+        }
+
+        function setupAdminControls() {
+            const addStarsBtn = document.querySelector('#admin-panel button[onclick="adminAddStars()"]');
+            const removeStarsBtn = document.querySelector('#admin-panel button[onclick="adminRemoveStars()"]');
+
+            if (addStarsBtn) {
+                addStarsBtn.addEventListener('click', adminAddStars);
+            }
+            if (removeStarsBtn) {
+                removeStarsBtn.addEventListener('click', adminRemoveStars);
+            }
+        }
+
+        function adminAddStars() {
+            const userId = document.getElementById('admin-user-id')?.value;
+            const amount = parseFloat(document.getElementById('admin-star-amount')?.value);
+            
+            if (!userId || isNaN(amount)) {
+                alert('Please enter valid user ID and amount');
+                return;
+            }
+            
+            alert(`Added ${amount} stars to user ${userId}`);
+            console.log(`Added ${amount} stars to user ${userId}`);
+        }
+
+        function adminRemoveStars() {
+            const userId = document.getElementById('admin-user-id')?.value;
+            const amount = parseFloat(document.getElementById('admin-star-amount')?.value);
+            
+            if (!userId || isNaN(amount)) {
+                alert('Please enter valid user ID and amount');
+                return;
+            }
+            
+            alert(`Removed ${amount} stars from user ${userId}`);
+            console.log(`Removed ${amount} stars from user ${userId}`);
+        }
+
+        // Setup navigation buttons
+        function setupNavigationButtons() {
+            document.querySelectorAll('.nav-btn').forEach(button => {
+                if (button.id !== 'admin-btn') { // admin-btn is handled separately
+                    button.addEventListener('click', function() {
+                        const sectionId = this.getAttribute('onclick')?.replace("showSection('", "").replace("')", "");
+                        if (sectionId) {
+                            showSection(sectionId);
+                        }
+                    });
+                }
+            });
+
+            // Back buttons
+            document.querySelectorAll('.back-btn').forEach(button => {
+                button.addEventListener('click', hideAllSections);
+            });
+        }
+        
+        // Initialize the app
+        function initApp() {
+            // Expand the web app if running in Telegram
+            if (tg) {
+                tg.expand();
+                
+                // Set theme colors to match Telegram
+                const themeParams = tg.themeParams || {};
+                document.documentElement.style.setProperty('--bg-color', themeParams.bg_color || '#1a1a2e');
+                document.documentElement.style.setProperty('--text-color', themeParams.text_color || '#e6e6e6');
+                document.documentElement.style.setProperty('--button-color', themeParams.button_color || '#4a00e0');
+                document.documentElement.style.setProperty('--button-text-color', themeParams.button_text_color || '#ffffff');
+            }
+            
+            // Setup all event listeners
+            setupTapButton();
+            setupCopyButton();
+            setupWithdrawalButton();
+            setupAdminLogin();
+            setupAdminControls();
+            setupNavigationButtons();
+            
+            // Load data and initialize UI
+            loadUserData();
+            hideAllSections();
+            
+            // Generate referral link based on Telegram user or random ID
+            let refUsername;
+            if (tg?.initDataUnsafe?.user?.username) {
+                refUsername = tg.initDataUnsafe.user.username;
+            } else if (tg?.initDataUnsafe?.user?.id) {
+                refUsername = 'user_' + tg.initDataUnsafe.user.id;
+            } else {
+                refUsername = 'user' + Math.floor(Math.random() * 10000);
+            }
+            
+            const refLinkElement = document.getElementById('refLink');
+            if (refLinkElement) {
+                refLinkElement.textContent = `https://t.me/your_bot_username?start=ref_${refUsername}`;
+            }
+        }
+
+        // Start the app when page loads
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
